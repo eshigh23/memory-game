@@ -1,26 +1,33 @@
 
 import './MemoryGame.css'
 import lodash from 'lodash'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 
-type MemoryProps = {
+type MemoryGameProps = {
     images: string[]
 }
 
-export default function MemoryGame({ images }: MemoryProps) {
+export default function MemoryGame({ images }: MemoryGameProps) {
 
-    const [doubledImages, setDoubledImages] = useState<string[]>(lodash.shuffle([...images, ...images]))
+    // avoid re-creating initial state every render by passing in a function react can call when initializing state
+    // (rather than calling the function yourself and react using the result)
+    // "pass in an initializer function"
+    const [doubledImages, setDoubledImages] = useState<string[]>(() => lodash.shuffle([...images, ...images]))
     const [activePair, setActivePair] = useState<number[]>([])
     const [matches, setMatches] = useState(new Set())
 
 
     const handleClick = (cardIdx: number) => {
-        setActivePair(prev => [...prev, cardIdx])
-    }
+        const activePairLength = activePair.length + 1
 
-    useEffect(() => {
-        if (activePair.length === 2) {
-            const [firstIdx, secondIdx] = activePair    // get indices of activePair
+        if (activePairLength <= 2) {    // show only up to two cards at a time
+            setActivePair(prev => [...prev, cardIdx])
+        }
+
+        if (activePairLength === 2) {   // check for match
+
+            const firstIdx = activePair[0]    // get indices of activePair
+            const secondIdx = cardIdx
 
             // if the urls are equal, add the indices to matches
             if (doubledImages[firstIdx] === doubledImages[secondIdx]) {
@@ -32,7 +39,7 @@ export default function MemoryGame({ images }: MemoryProps) {
                 setActivePair([])
             }, 1000)
         }
-    }, [activePair])
+    }
 
 
     return (
